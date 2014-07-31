@@ -101,7 +101,7 @@ module CloudSearch
           values = v.respond_to?(:map) ? v.map{ |i| "'#{i}'" } : ["'#{v}'"]
           "&facet-#{k}-constraints=#{values.join(',')}"
         end.join('&'))
-        u.concat("&rank=#{@rank}") if @rank
+        u.concat("&sort=#{@rank}") if @rank
       end
     end
 
@@ -116,4 +116,3 @@ module CloudSearch
     end
   end
 end
-
