@@ -12,6 +12,7 @@ module CloudSearch
       @facets   = []
       @fields   = []
       @facets_constraints = {}
+      @structured_query = false
     end
 
     def search
@@ -20,6 +21,11 @@ module CloudSearch
       @response.body        = cloud_search_response.body
 
       @response
+    end
+
+    def with_structured_query(query)
+      @structured_query = true
+      with_query query
     end
 
     def with_query(query)
@@ -94,14 +100,15 @@ module CloudSearch
 
       "#{CloudSearch.config.search_url}/search".tap do |u|
         u.concat("?#{query_parameter}=#{query}&size=#{items_per_page}&start=#{start}")
-        u.concat("&return-fields=#{URI.escape(@fields.join(","))}") if @fields.any?
+        u.concat("&return=#{URI.escape(@fields.join(","))}") if @fields.any?
         u.concat("&#{filter_expression}") if @filters.any?
         u.concat("&facet=#{@facets.join(',')}") if @facets.any?
         u.concat(@facets_constraints.map do |k,v|
           values = v.respond_to?(:map) ? v.map{ |i| "'#{i}'" } : ["'#{v}'"]
           "&facet-#{k}-constraints=#{values.join(',')}"
         end.join('&'))
-        u.concat("&sort=#{@rank}") if @rank
+        u.concat("&sort=#{URI.escape(@rank)}") if @rank
+        u.concat("&q.parser=structured") if @structured_query
       end
     end
 
